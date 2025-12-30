@@ -18,7 +18,7 @@
 - **Live Controls:** Adjust Rotation and Intensity in real-time.
 
 ### 🔦 Light Texturing (Gobos)
-![Gobos](images/Feature_Gobos_V2.png)
+![Gobos](images/Feature_Gobos_V3.png)
 - **Texture Library:** Apply real-world light textures (Gobos) to your lights.
 - **Procedural Textures:** Use Gradient or Noise textures for soft, organic lighting.
 - **Camera Visibility:** Toggle whether the texture source is visible to the camera.
