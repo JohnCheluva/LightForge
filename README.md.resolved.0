@@ -1,0 +1,38 @@
+# LightForge
+
+**LightForge** (formerly Blender Light Studio) is a professional lighting addon for Blender designed to streamline your studio lighting workflow.
+
+## Features
+
+### 💡 Lighting Tools
+- **3 Point Lighting:** Instantly create Key, Fill, and Rim lights targeting your subject.
+- **Studio Backdrop:** Generate a curved, smooth backdrop with automatic material assignment (Mid Gray 0.5/0.5).
+- **Shadow Catcher:** Create transparent ground planes for compositing.
+
+### 🌐 HDRI Library
+- **Thumbnail Browser:** Visual preview of HDRIs.
+- **Live Controls:** Adjust Rotation and Intensity in real-time.
+
+### 🔦 Light Texturing (Gobos)
+- **Texture Library:** Apply real-world light textures (Gobos) to your lights.
+- **Procedural Textures:** Use Gradient or Noise textures for soft, organic lighting.
+- **Camera Visibility:** Toggle whether the texture source is visible to the camera.
+
+### ⬜ Reflector Generator
+- **Auto-Placement:** Quickly add bounce cards.
+- **Materials:** Silver, Gold, White, and Black Flag presets.
+
+### 🎛️ Light Mixer
+- **Unified Control:** Manage intensity, color, and spread for all lights in one panel.
+- **Solo/Mute:** Quickly isolate lights for debugging.
+
+## Installation
+
+1. Download the latest release (`LightForge_vXX.zip`).
+2. Open Blender.
+3. Go to `Edit > Preferences > Add-ons`.
+4. Click **Install...** and select the zip file.
+5. Enable the addon ("Lighting: LightForge").
+
+## Usage
+Find the specialized tools in the **Sidebar (N-Panel)** under the **LightForge** tab.
