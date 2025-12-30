@@ -1,35 +1,35 @@
 # LightForge
 
-![LightForge UI](images/LightForge_Banner_V3.jpg)
+![LightForge UI](LightForge/images/LightForge_Banner_V3.jpg)
 
 **LightForge** is a professional lighting addon for Blender designed to streamline your studio lighting workflow.
 
 ## Features
 
 ### 💡 Lighting Tools
-![Lighting Tools](images/Feature_Lighting_Tools.png)
+![Lighting Tools](LightForge/images/Feature_Lighting_Tools.png)
 - **3 Point Lighting:** Instantly create Key, Fill, and Rim lights targeting your subject.
 - **Studio Backdrop:** Generate a curved, smooth backdrop with automatic material assignment (Mid Gray 0.5/0.5).
 - **Shadow Catcher:** Create transparent ground planes for compositing.
 
 ### 🌐 HDRI Library
-![HDRI Library](images/Feature_HDRI.png)
+![HDRI Library](LightForge/images/Feature_HDRI.png)
 - **Thumbnail Browser:** Visual preview of HDRIs.
 - **Live Controls:** Adjust Rotation and Intensity in real-time.
 
 ### 🔦 Light Texturing (Gobos)
-![Gobos](images/Feature_Gobos_V3.png)
+![Gobos](LightForge/images/Feature_Gobos_V3.png)
 - **Texture Library:** Apply real-world light textures (Gobos) to your lights.
 - **Procedural Textures:** Use Gradient or Noise textures for soft, organic lighting.
 - **Camera Visibility:** Toggle whether the texture source is visible to the camera.
 
 ### ⬜ Reflector Generator
-![Reflectors](images/Feature_Reflectors_V2.png)
+![Reflectors](LightForge/images/Feature_Reflectors_V2.png)
 - **Auto-Placement:** Quickly add bounce cards.
 - **Materials:** Silver, Gold, White, and Black Flag presets.
 
 ### 🎛️ Light Mixer
-![Light Mixer](images/Feature_Light_Mixer.png)
+![Light Mixer](LightForge/images/Feature_Light_Mixer.png)
 - **Unified Control:** Manage intensity, color, and spread for all lights in one panel.
 - **Solo/Mute:** Quickly isolate lights for debugging.
 
