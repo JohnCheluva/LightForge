@@ -1,9 +1,30 @@
 import bpy
+import os
 
+def ensure_collection_linked(context, obj, collection_name):
+    """Ensure object is linked to a specific collection, unlinking from others if needed"""
+    # Create or get collection
+    if collection_name in bpy.data.collections:
+        col = bpy.data.collections[collection_name]
+    else:
+        col = bpy.data.collections.new(collection_name)
+        context.scene.collection.children.link(col)
+        
+    # Link object if not already linked
+    if obj.name not in col.objects:
+        col.objects.link(obj)
+        
+    # Unlink from other collections (optional, keeps hierarchy clean)
+    for other_col in obj.users_collection:
+        if other_col != col:
+            other_col.objects.unlink(obj)
 class BLS_OT_setup_product_lighting(bpy.types.Operator):
     bl_idname = "bls.setup_product_lighting"
     bl_label = "3 Point Lighting"
     bl_options = {'REGISTER', 'UNDO'}
+
+    def ensure_collection(self, context, collection_name):
+        return ensure_collection_linked(context, collection_name)
 
     def execute(self, context):
         context.scene.render.engine = 'CYCLES'
@@ -31,6 +52,9 @@ class BLS_OT_setup_product_lighting(bpy.types.Operator):
             light.name = name
             light.data.energy = energy
             light.data.size = size
+            
+            # Ensure proper collection
+            ensure_collection_linked(context, light, "Lights")
             
             # Add track-to constraint
             constraint = light.constraints.new(type='TRACK_TO')
@@ -120,6 +144,12 @@ class BLS_OT_add_reflector(bpy.types.Operator):
         bpy.ops.mesh.primitive_plane_add(size=1, location=(0, 0, 0))
         reflector = context.active_object
         reflector.name = f"Reflector_{self.material_type}"
+        
+        # Ensure proper collection
+        ensure_collection_linked(context, reflector, "Reflectors")
+        
+        # Ensure proper collection
+        ensure_collection_linked(context, reflector, "Reflectors")
         
         mat_name = f"Reflector_{self.material_type}"
         mat = bpy.data.materials.get(mat_name)
@@ -391,6 +421,12 @@ class BLS_OT_create_tracked_light(bpy.types.Operator):
         light.data.energy = 500
         light.data.size = 1
         
+        # Ensure proper collection
+        ensure_collection_linked(context, light, "Lights")
+        
+        # Ensure proper collection
+        ensure_collection_linked(context, light, "Lights")
+        
         # Add track-to constraint
         constraint = light.constraints.new(type='TRACK_TO')
         constraint.target = target
@@ -448,6 +484,9 @@ class BLS_OT_add_reflector_from_selection(bpy.types.Operator):
         bpy.ops.mesh.primitive_plane_add(size=1, location=(0, 0, 0))
         reflector = context.active_object
         reflector.name = f"Reflector_{material_type}"
+        
+        # Ensure proper collection
+        ensure_collection_linked(context, reflector, "Reflectors")
         
         mat_name = f"Reflector_{material_type}"
         mat = bpy.data.materials.get(mat_name)
@@ -584,10 +623,76 @@ class BLS_OT_create_shadow_catcher(bpy.types.Operator):
         self.report({'INFO'}, "Shadow Catcher Enabled")
         return {'FINISHED'}
 
+class BLS_OT_apply_reflector_material(bpy.types.Operator):
+    bl_idname = "bls.apply_reflector_material"
+    bl_label = "Apply Material to Selected"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        props = context.scene.bls_props
+        material_type = props.active_reflector.upper()
+        
+        # Default to SILVER if no valid selection
+        if material_type not in ['SILVER', 'GOLD', 'WHITE', 'BLACK']:
+            material_type = 'SILVER'
+            
+        selected = context.selected_objects
+        if not selected:
+            self.report({'ERROR'}, "Please select an object")
+            return {'CANCELLED'}
+            
+        for obj in selected:
+            if obj.type != 'MESH':
+                continue
+                
+            mat_name = f"Reflector_{material_type}"
+            mat = bpy.data.materials.get(mat_name)
+            
+            # Create material if needed (reusing logic from add_reflector)
+            if not mat:
+                mat = bpy.data.materials.new(name=mat_name)
+                mat.use_nodes = True
+                nodes = mat.node_tree.nodes
+                nodes.clear()
+                
+                node_bsdf = nodes.new(type='ShaderNodeBsdfPrincipled')
+                node_output = nodes.new(type='ShaderNodeOutputMaterial')
+                mat.node_tree.links.new(node_bsdf.outputs['BSDF'], node_output.inputs['Surface'])
+                
+                if material_type == 'SILVER':
+                    node_bsdf.inputs['Base Color'].default_value = (0.8, 0.8, 0.8, 1)
+                    node_bsdf.inputs['Metallic'].default_value = 1.0
+                    node_bsdf.inputs['Roughness'].default_value = 0.1
+                elif material_type == 'GOLD':
+                    node_bsdf.inputs['Base Color'].default_value = (1.0, 0.766, 0.336, 1)
+                    node_bsdf.inputs['Metallic'].default_value = 1.0
+                    node_bsdf.inputs['Roughness'].default_value = 0.1
+                elif material_type == 'WHITE':
+                    node_bsdf.inputs['Base Color'].default_value = (1, 1, 1, 1)
+                    node_bsdf.inputs['Metallic'].default_value = 0.0
+                    node_bsdf.inputs['Roughness'].default_value = 0.5
+                elif material_type == 'BLACK':
+                    node_bsdf.inputs['Base Color'].default_value = (0, 0, 0, 1)
+                    node_bsdf.inputs['Metallic'].default_value = 0.0
+                    node_bsdf.inputs['Roughness'].default_value = 1.0
+            
+            # Apply material
+            if obj.data.materials:
+                obj.data.materials[0] = mat
+            else:
+                obj.data.materials.append(mat)
+                
+            # Ensure it is in the Reflectors collection
+            ensure_collection_linked(context, obj, "Reflectors")
+            
+        self.report({'INFO'}, f"Applied {material_type} to selection")
+        return {'FINISHED'}
+
 classes = (
     BLS_OT_setup_product_lighting,
     BLS_OT_setup_hdri,
     BLS_OT_add_reflector,
+    BLS_OT_apply_reflector_material,
     BLS_OT_add_reflector_from_selection,
     BLS_OT_select_light,
     BLS_OT_auto_group_lights,

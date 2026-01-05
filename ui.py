@@ -104,6 +104,9 @@ class BLS_PT_TexturePanel(bpy.types.Panel):
                 row.operator("bls.apply_gobo", text="Apply Gradient", icon='IPO_LINEAR')
             else:
                 row.operator("bls.apply_gobo", text="Apply Noise", icon='MOD_NOISE')
+            
+            # Camera Visibility for Procedural
+            layout.prop(props, "gobo_camera_visible", text="Camera Visibility")
 
 class BLS_PT_ReflectorPanel(bpy.types.Panel):
     bl_label = "Reflector Generator"
@@ -127,6 +130,7 @@ class BLS_PT_ReflectorPanel(bpy.types.Panel):
         row = layout.row(align=True)
         row.scale_y = 1.3
         row.operator("bls.add_reflector_from_selection", text="Add Reflector", icon='CHECKMARK')
+        row.operator("bls.apply_reflector_material", text="Apply to Selected", icon='BRUSH_DATA')
         row.operator("bls.reload_icons", text="", icon='FILE_REFRESH')
 
 class BLS_PT_MixerPanel(bpy.types.Panel):
