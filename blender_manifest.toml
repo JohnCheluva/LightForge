@@ -5,16 +5,16 @@ name = "LightForge"
 version = "1.4.22"
 tagline = "Professional Studio Lighting System"
 description = "LightForge is a professional lighting toolkit for Blender, providing studio-style light rigs, HDRI control, and production-ready lighting workflows."
-maintainer = "Cheluva <rayacheluva@gmail.com>"
+maintainer = "Cheluva"
 type = "add-on"
 
-blender_version_min = "4.2.0"
+blender_version_min = "4.0.0"
 
 license = ["SPDX:GPL-3.0-or-later"]
 
 tags = ["lighting", "rendering", "studio", "hdr", "tools"]
 
 [permissions]
-network = { reason = "Optional update checks and online resources" }
-files = { reason = "Load and manage custom textures and HDRIs" }
-clipboard = { reason = "Copy and paste lighting settings" }
+network = "Optional update checks and online resources"
+files = "Load and manage custom textures and HDRIs"
+clipboard = "Copy and paste lighting settings"
