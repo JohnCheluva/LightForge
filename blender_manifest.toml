@@ -10,7 +10,7 @@ website = "https://github.com/JohnCheluva/LightForge"
 tags = ["lighting", "rendering", "3d"]
 
 [blender]
-min_version = "4.2.0"
+version_min = "4.2.0"
 
 [permissions]
 network = { reason = "Check for updates (optional)" }
