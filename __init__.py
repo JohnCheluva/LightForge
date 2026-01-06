@@ -1,6 +1,6 @@
 bl_info = {
     "name": "LightForge",
-    "author": "Antigravity",
+    "author": "Cheluva",
     "version": (1, 4, 22),
     "blender": (3, 0, 0),
     "location": "View3D > Sidebar > LightForge",

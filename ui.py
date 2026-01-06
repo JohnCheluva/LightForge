@@ -43,10 +43,11 @@ class BLS_PT_SetupPanel(bpy.types.Panel):
             box.label(text="Place HDRIs in textures/hdri folder", icon='INFO')
         else:
             row.template_icon_view(props, "active_hdri_texture", show_labels=True)
-        
+            
         row = box.row(align=True)
-        row.scale_y = 1.2
+        row.scale_y = 1.3
         row.operator("bls.apply_hdri_from_lib", text="Apply HDRI", icon='WORLD')
+        row.operator("bls.import_custom_hdri", text="", icon='FILE_FOLDER')
         row.operator("bls.reload_icons", text="", icon='FILE_REFRESH')
         
         if props.active_hdri_texture != "NONE":
@@ -89,6 +90,7 @@ class BLS_PT_TexturePanel(bpy.types.Panel):
             row = layout.row(align=True)
             row.scale_y = 1.3
             row.operator("bls.apply_gobo", text="Apply to Selected", icon='CHECKMARK')
+            row.operator("bls.import_custom_gobo", text="", icon='FILE_FOLDER')
             row.operator("bls.reload_icons", text="", icon='FILE_REFRESH')
             
             # Camera Visibility (Moved here)
@@ -131,6 +133,7 @@ class BLS_PT_ReflectorPanel(bpy.types.Panel):
         row.scale_y = 1.3
         row.operator("bls.add_reflector_from_selection", text="Add Reflector", icon='CHECKMARK')
         row.operator("bls.apply_reflector_material", text="Apply to Selected", icon='BRUSH_DATA')
+        row.operator("bls.import_custom_reflector", text="", icon='FILE_FOLDER')
         row.operator("bls.reload_icons", text="", icon='FILE_REFRESH')
 
 class BLS_PT_MixerPanel(bpy.types.Panel):

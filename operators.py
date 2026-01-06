@@ -688,6 +688,181 @@ class BLS_OT_apply_reflector_material(bpy.types.Operator):
         self.report({'INFO'}, f"Applied {material_type} to selection")
         return {'FINISHED'}
 
+class BLS_OT_import_custom_hdri(bpy.types.Operator):
+    bl_idname = "bls.import_custom_hdri"
+    bl_label = "Import Custom HDRI"
+    bl_options = {'REGISTER', 'UNDO'}
+    
+    filepath: bpy.props.StringProperty(subtype="FILE_PATH")
+    
+    def execute(self, context):
+        if not self.filepath:
+            return {'CANCELLED'}
+        
+        # Load image
+        try:
+            img = bpy.data.images.load(self.filepath, check_existing=True)
+        except:
+            self.report({'ERROR'}, "Could not load image")
+            return {'CANCELLED'}
+            
+        # Setup world (Using same logic as standard setup)
+        world = context.scene.world
+        if not world:
+            world = bpy.data.worlds.new("World")
+            context.scene.world = world
+        
+        world.use_nodes = True
+        nodes = world.node_tree.nodes
+        links = world.node_tree.links
+        nodes.clear()
+        
+        node_output = nodes.new(type='ShaderNodeOutputWorld')
+        node_bg = nodes.new(type='ShaderNodeBackground')
+        node_env = nodes.new(type='ShaderNodeTexEnvironment')
+        node_mapping = nodes.new(type='ShaderNodeMapping')
+        node_coord = nodes.new(type='ShaderNodeTexCoord')
+        
+        node_env.image = img
+        
+        links.new(node_coord.outputs['Generated'], node_mapping.inputs['Vector'])
+        links.new(node_mapping.outputs['Vector'], node_env.inputs['Vector'])
+        links.new(node_env.outputs['Color'], node_bg.inputs['Color'])
+        links.new(node_bg.outputs['Background'], node_output.inputs['Surface'])
+        
+        node_bg.name = "BLS_Background"
+        node_mapping.name = "BLS_Mapping"
+        
+        props = context.scene.bls_props
+        node_bg.inputs['Strength'].default_value = props.hdri_intensity
+        node_mapping.inputs['Rotation'].default_value[2] = props.hdri_rotation * (3.14159 / 180.0)
+        
+        node_output.location = (400, 0)
+        node_bg.location = (200, 0)
+        node_env.location = (0, 0)
+        node_mapping.location = (-200, 0)
+        node_coord.location = (-400, 0)
+        
+        self.report({'INFO'}, f"Imported HDRI: {img.name}")
+        return {'FINISHED'}
+        
+    def invoke(self, context, event):
+        context.window_manager.fileselect_add(self)
+        return {'RUNNING_MODAL'}
+
+class BLS_OT_import_custom_gobo(bpy.types.Operator):
+    bl_idname = "bls.import_custom_gobo"
+    bl_label = "Import Custom Texture"
+    bl_options = {'REGISTER', 'UNDO'}
+    
+    filepath: bpy.props.StringProperty(subtype="FILE_PATH")
+    
+    def execute(self, context):
+        if not self.filepath:
+            return {'CANCELLED'}
+            
+        light = context.active_object
+        if not light or light.type != 'LIGHT':
+            self.report({'ERROR'}, "Please select a light")
+            return {'CANCELLED'}
+            
+        try:
+            img = bpy.data.images.load(self.filepath, check_existing=True)
+        except:
+            self.report({'ERROR'}, "Could not load image")
+            return {'CANCELLED'}
+            
+        light.data.use_nodes = True
+        nodes = light.data.node_tree.nodes
+        links = light.data.node_tree.links
+        nodes.clear()
+        
+        node_emission = nodes.new(type='ShaderNodeEmission')
+        node_output = nodes.new(type='ShaderNodeOutputLight')
+        links.new(node_emission.outputs['Emission'], node_output.inputs['Surface'])
+        
+        node_tex = nodes.new(type='ShaderNodeTexImage')
+        node_tex.image = img
+        node_tex.location = (-300, 0)
+        
+        node_mapping = nodes.new(type='ShaderNodeMapping')
+        node_mapping.location = (-500, 0)
+        
+        node_coord = nodes.new(type='ShaderNodeTexCoord')
+        node_coord.location = (-700, 0)
+        
+        links.new(node_coord.outputs['UV'], node_mapping.inputs['Vector'])
+        links.new(node_mapping.outputs['Vector'], node_tex.inputs['Vector'])
+        links.new(node_tex.outputs['Color'], node_emission.inputs['Color'])
+        
+        # Ensure collection (Just in case)
+        ensure_collection_linked(context, light, "Lights")
+        
+        self.report({'INFO'}, f"Applied Custom Texture: {img.name}")
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        context.window_manager.fileselect_add(self)
+        return {'RUNNING_MODAL'}
+
+class BLS_OT_import_custom_reflector(bpy.types.Operator):
+    bl_idname = "bls.import_custom_reflector"
+    bl_label = "Import Custom Reflector"
+    bl_options = {'REGISTER', 'UNDO'}
+    
+    filepath: bpy.props.StringProperty(subtype="FILE_PATH")
+    
+    def execute(self, context):
+        if not self.filepath:
+            return {'CANCELLED'}
+            
+        try:
+            img = bpy.data.images.load(self.filepath, check_existing=True)
+        except:
+            self.report({'ERROR'}, "Could not load image")
+            return {'CANCELLED'}
+            
+        # Create plane
+        bpy.ops.mesh.primitive_plane_add(size=1, location=(0,0,0))
+        reflector = context.active_object
+        reflector.name = f"Reflector_{img.name}"
+        
+        # Material
+        mat = bpy.data.materials.new(name=f"Mat_{img.name}")
+        mat.use_nodes = True
+        nodes = mat.node_tree.nodes
+        links = mat.node_tree.links
+        nodes.clear()
+        
+        # Principled BSDF with Image
+        node_bsdf = nodes.new(type='ShaderNodeBsdfPrincipled')
+        node_output = nodes.new(type='ShaderNodeOutputMaterial')
+        node_tex = nodes.new(type='ShaderNodeTexImage')
+        node_tex.image = img
+        node_tex.location = (-300, 200)
+        
+        links.new(node_tex.outputs['Color'], node_bsdf.inputs['Base Color'])
+        links.new(node_bsdf.outputs['BSDF'], node_output.inputs['Surface'])
+        
+        # Set Roughness to 1.0 (Matte) by default for custom images (Posters/etc)
+        node_bsdf.inputs['Roughness'].default_value = 1.0
+        node_bsdf.inputs['Metallic'].default_value = 0.0
+        
+        if reflector.data.materials:
+            reflector.data.materials[0] = mat
+        else:
+            reflector.data.materials.append(mat)
+            
+        # Ensure collection
+        ensure_collection_linked(context, reflector, "Reflectors")
+        
+        self.report({'INFO'}, f"Created Custom Reflector: {img.name}")
+        return {'FINISHED'}
+        
+    def invoke(self, context, event):
+        context.window_manager.fileselect_add(self)
+        return {'RUNNING_MODAL'}
+
 classes = (
     BLS_OT_setup_product_lighting,
     BLS_OT_setup_hdri,
@@ -705,6 +880,15 @@ classes = (
     BLS_OT_set_resolution,
     BLS_OT_create_cyclorama,
     BLS_OT_create_shadow_catcher,
+    BLS_OT_import_custom_hdri,
+    BLS_OT_import_custom_gobo,
+    BLS_OT_import_custom_reflector,
+    BLS_OT_import_custom_hdri,
+    BLS_OT_import_custom_gobo,
+    BLS_OT_import_custom_reflector,
+    BLS_OT_import_custom_hdri,
+    BLS_OT_import_custom_gobo,
+    BLS_OT_import_custom_reflector,
 )
 
 def register():
